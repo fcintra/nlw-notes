@@ -49,30 +49,40 @@ export function NewNoteCard({onNoteCreated}: NewNoteCardProps){
             return
         }
 
-        setIsRecording(true);
-        setShouldShowOnboarding(false);
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function (stream) {
+            setIsRecording(true);
+            setShouldShowOnboarding(false);
 
 
-        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-        speechRecognition = new SpeechRecognitionAPI();
-        speechRecognition.lang = 'pt-BR';
-        speechRecognition.continuous = true;
-        speechRecognition.maxAlternatives = 1;
-        speechRecognition.interimResults = true;
+            const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            speechRecognition = new SpeechRecognitionAPI();
+            speechRecognition.lang = 'pt-BR';
+            speechRecognition.continuous = true;
+            speechRecognition.maxAlternatives = 1;
+            speechRecognition.interimResults = true;
 
-        speechRecognition.onresult = (event) => {
-            const trascription = Array.from(event.results).reduce((text, result) => {
-                return text.concat(result[0].transcript)
-            }, '')
+            speechRecognition.onresult = (event) => {
+                const trascription = Array.from(event.results).reduce((text, result) => {
+                    return text.concat(result[0].transcript)
+                }, '')
 
-            setContent(trascription)
-        }
+                setContent(trascription)
+            }
 
-        speechRecognition.onerror = (event) => {
-            console.error(event);
-        }
+            speechRecognition.onerror = (event) => {
+                console.error(event);
+            }
 
-        speechRecognition.start();
+            speechRecognition.start();
+        })
+        .catch(function (error) {
+            // O usuário negou a permissão ou ocorreu um erro
+            console.error('Erro ao acessar o microfone:', error);
+            toast.error('Dê permissão para acessar o microfone')
+        });
+        
     }
 
     function handleStopRecording(){
